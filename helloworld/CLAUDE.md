@@ -73,8 +73,9 @@ The repository is set up to work with standard Git operations and follows typica
 
 ## New Script Added
 
-A new monitoring script `system-monitor.sh` has been added that provides two options:
+A new monitoring script `system-monitor.sh` has been added that provides three options:
 1. Show top processes using most CPU: `./system-monitor.sh cpu`
-2. Show top processes using most VRAM (GPU memory): `./system-monitor.sh vram`
+2. Show top processes using most RAM: `./system-monitor.sh ram`
+3. Show top processes using most VRAM (GPU memory): `./system-monitor.sh vram`
 
 The script requires NVIDIA drivers and nvidia-smi to be installed for VRAM monitoring functionality.

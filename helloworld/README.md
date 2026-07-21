@@ -6,14 +6,19 @@ This repository contains a DevOps project with monitoring scripts for system res
 
 ### `system-monitor.sh`
 
-A bash script that provides two monitoring options:
+A bash script that provides three monitoring options:
 
 1. **CPU Usage Monitoring**: Shows top processes using most CPU
    ```bash
    ./system-monitor.sh cpu
    ```
 
-2. **VRAM Usage Monitoring**: Shows top processes using most VRAM (GPU memory)
+2. **RAM Usage Monitoring**: Shows top processes using most RAM
+   ```bash
+   ./system-monitor.sh ram
+   ```
+
+3. **VRAM Usage Monitoring**: Shows top processes using most VRAM (GPU memory)
    ```bash
    ./system-monitor.sh vram
    ```
@@ -28,6 +33,9 @@ A bash script that provides two monitoring options:
 ```bash
 # Show CPU usage
 ./system-monitor.sh cpu
+
+# Show RAM usage
+./system-monitor.sh ram
 
 # Show VRAM usage  
 ./system-monitor.sh vram
