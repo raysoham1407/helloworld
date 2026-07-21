@@ -27,16 +27,16 @@ A bash script that provides two monitoring options:
 
 ```bash
 # Show CPU usage
-./top-cpu-processes.sh cpu
+./system-monitor.sh cpu
 
 # Show VRAM usage  
-./top-cpu-processes.sh vram
+./system-monitor.sh vram
 
 # Show help
-./top-cpu-processes.sh help
+./system-monitor.sh help
 ```
 
 ## Repository Structure
 
-- `top-cpu-processes.sh` - Main monitoring script
+- `system-monitor.sh` - Main monitoring script
 - `CLAUDE.md` - Development guidelines for Claude Code
