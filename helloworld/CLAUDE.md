@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a DevOps project repository that appears to be initialized but currently contains only this CLAUDE.md file and no actual source code. The repository is connected to https://github.com/raysoham1407/helloworld.git.
+This is a DevOps project repository containing system monitoring scripts and a web-based Markdown reader. The repository is connected to https://github.com/raysoham1407/helloworld.git.
 
 ## Repository Structure
 

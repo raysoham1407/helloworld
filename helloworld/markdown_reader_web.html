@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Markdown Reader</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .toolbar {
+            background-color: #34495e;
+            padding: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            border-bottom: 1px solid #2c3e50;
+        }
+
+        .toolbar button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            cursor: pointer;
+            border-radius: 3px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .toolbar button:hover {
+            background-color: #2980b9;
+        }
+
+        .toolbar button.active {
+            background-color: #e74c3c;
+        }
+
+        .container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .editor-container, .preview-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+            border-right: 1px solid #ddd;
+        }
+
+        .container-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        #editor {
+            flex: 1;
+            border: 1px solid #ddd;
+            padding: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            resize: none;
+            outline: none;
+        }
+
+        #preview {
+            flex: 1;
+            border: 1px solid #ddd;
+            padding: 10px;
+            overflow: auto;
+            background-color: white;
+        }
+
+        #preview h1, #preview h2, #preview h3 {
+            margin-top: 1em;
+            margin-bottom: 0.5em;
+        }
+
+        #preview h1 {
+            color: #0d47a1;
+        }
+
+        #preview h2 {
+            color: #1565c0;
+        }
+
+        #preview h3 {
+            color: #1976d2;
+        }
+
+        #preview blockquote {
+            border-left: 4px solid #ddd;
+            margin: 1em 0;
+            padding: 0.5em 1em;
+            background-color: #f9f9f9;
+        }
+
+        #preview code {
+            background-color: #f4f4f4;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #e74c3c;
+        }
+
+        #preview pre {
+            background-color: #f4f4f4;
+            padding: 10px;
+            border-radius: 5px;
+            overflow: auto;
+            margin: 1em 0;
+        }
+
+        #preview ul, #preview ol {
+            margin-left: 2em;
+            margin-bottom: 1em;
+        }
+
+        #preview li {
+            margin-bottom: 0.5em;
+        }
+
+        #preview table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 1em 0;
+        }
+
+        #preview th, #preview td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        #preview th {
+            background-color: #f2f2f2;
+        }
+
+        .file-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .file-actions button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            cursor: pointer;
+            border-radius: 3px;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+
+        .file-actions button:hover {
+            background-color: #2980b9;
+        }
+
+        .status-bar {
+            background-color: #ecf0f1;
+            padding: 5px 10px;
+            font-size: 12px;
+            border-top: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 20px;
+            border-radius: 5px;
+            width: 80%;
+            max-width: 500px;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: black;
+        }
+
+        textarea:focus, input:focus {
+            outline: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1><i class="fas fa-edit"></i> Web Markdown Reader</h1>
+        <div class="file-actions">
+            <button id="newBtn"><i class="fas fa-file"></i> New</button>
+            <button id="openBtn"><i class="fas fa-folder-open"></i> Open</button>
+            <button id="saveBtn"><i class="fas fa-save"></i> Save</button>
+        </div>
+    </div>
+
+    <div class="toolbar">
+        <button id="undoBtn" title="Undo"><i class="fas fa-undo"></i></button>
+        <button id="redoBtn" title="Redo"><i class="fas fa-redo"></i></button>
+        <button id="boldBtn" title="Bold"><i class="fas fa-bold"></i></button>
+        <button id="italicBtn" title="Italic"><i class="fas fa-italic"></i></button>
+        <button id="headingBtn" title="Heading"><i class="fas fa-heading"></i></button>
+        <button id="quoteBtn" title="Quote"><i class="fas fa-quote-left"></i></button>
+        <button id="linkBtn" title="Link"><i class="fas fa-link"></i></button>
+        <button id="codeBtn" title="Code"><i class="fas fa-code"></i></button>
+        <button id="listBtn" title="List"><i class="fas fa-list-ul"></i></button>
+    </div>
+
+    <div class="container">
+        <div class="editor-container">
+            <div class="container-title">Editor</div>
+            <textarea id="editor" placeholder="Start writing your markdown here..."></textarea>
+        </div>
+        <div class="preview-container">
+            <div class="container-title">Preview</div>
+            <div id="preview"></div>
+        </div>
+    </div>
+
+    <div class="status-bar">
+        <span>Ready</span>
+        <span>Lines: <span id="lineCount">0</span></span>
+    </div>
+
+    <!-- Modal for file dialog -->
+    <div id="fileModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Open File</h2>
+            <input type="file" id="fileInput" accept=".md,.txt">
+            <br><br>
+            <button id="openFileBtn">Open</button>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const editor = document.getElementById('editor');
+        const preview = document.getElementById('preview');
+        const newBtn = document.getElementById('newBtn');
+        const openBtn = document.getElementById('openBtn');
+        const saveBtn = document.getElementById('saveBtn');
+        const undoBtn = document.getElementById('undoBtn');
+        const redoBtn = document.getElementById('redoBtn');
+        const boldBtn = document.getElementById('boldBtn');
+        const italicBtn = document.getElementById('italicBtn');
+        const headingBtn = document.getElementById('headingBtn');
+        const quoteBtn = document.getElementById('quoteBtn');
+        const linkBtn = document.getElementById('linkBtn');
+        const codeBtn = document.getElementById('codeBtn');
+        const listBtn = document.getElementById('listBtn');
+        const fileModal = document.getElementById('fileModal');
+        const fileInput = document.getElementById('fileInput');
+        const openFileBtn = document.getElementById('openFileBtn');
+        const closeBtn = document.querySelector('.close');
+        const lineCount = document.getElementById('lineCount');
+
+        // State
+        let currentFile = null;
+        let undoStack = [];
+        let redoStack = [];
+        let isUndoRedo = false;
+
+        // Initialize with sample content
+        let lastContent = '';
+        let lastSavedContent = '';
+
+        // Initialize the application
+        function init() {
+            // Set up event listeners
+            editor.addEventListener('input', updatePreview);
+            newBtn.addEventListener('click', newFile);
+            openBtn.addEventListener('click', openFile);
+            saveBtn.addEventListener('click', saveFile);
+            undoBtn.addEventListener('click', undo);
+            redoBtn.addEventListener('click', redo);
+            boldBtn.addEventListener('click', () => insertMarkdown('**bold**'));
+            italicBtn.addEventListener('click', () => insertMarkdown('*italic*'));
+            headingBtn.addEventListener('click', () => insertMarkdown('# Heading'));
+            quoteBtn.addEventListener('click', () => insertMarkdown('> Quote'));
+            linkBtn.addEventListener('click', insertLink);
+            codeBtn.addEventListener('click', () => insertMarkdown('`code`'));
+            listBtn.addEventListener('click', () => insertMarkdown('- List item'));
+            closeBtn.addEventListener('click', () => fileModal.style.display = 'none');
+            openFileBtn.addEventListener('click', handleFileOpen);
+            fileInput.addEventListener('change', handleFileSelect);
+
+            // Keyboard shortcuts
+            document.addEventListener('keydown', function(e) {
+                if (e.ctrlKey || e.metaKey) {
+                    switch(e.key) {
+                        case 'n':
+                            e.preventDefault();
+                            newFile();
+                            break;
+                        case 'o':
+                            e.preventDefault();
+                            openFile();
+                            break;
+                        case 's':
+                            e.preventDefault();
+                            saveFile();
+                            break;
+                        case 'z':
+                            e.preventDefault();
+                            if (e.shiftKey) {
+                                redo();
+                            } else {
+                                undo();
+                            }
+                            break;
+                    }
+                }
+            });
+
+            // Load sample content
+            loadSampleContent();
+
+            // Initialize lastContent with sample content
+            lastContent = editor.value;
+        }
+
+        // Update preview based on editor content
+        function updatePreview() {
+            if (!isUndoRedo) {
+                // Save current state to undo stack when content changes
+                if (editor.value !== lastContent) {
+                    undoStack.push(lastContent);
+                    redoStack = [];
+                    lastContent = editor.value;
+                }
+            }
+
+            const markdownContent = editor.value;
+            const htmlContent = marked.parse(markdownContent);
+            preview.innerHTML = htmlContent;
+            updateLineCount();
+        }
+
+        // Update line count in status bar
+        function updateLineCount() {
+            const lines = editor.value.split('\n').length;
+            lineCount.textContent = lines;
+        }
+
+        // Load sample content
+        function loadSampleContent() {
+            const sampleContent = `# Welcome to Web Markdown Reader
+
+This is a **web-based** Markdown editor that provides real-time preview.
+
+## Features
+
+- Real-time Markdown preview
+- Split-screen editor and preview
+- Formatting toolbar with common Markdown elements
+- File operations (New, Open, Save)
+- Keyboard shortcuts:
+  - Ctrl+N: New file
+  - Ctrl+O: Open file
+  - Ctrl+S: Save file
+
+## Try it out!
+
+You can **format text** using Markdown syntax:
+- Use *italic* for emphasis
+- Create [links](https://example.com)
+- Add code snippets with \`code\` formatting
+- Create lists with - or 1. items
+
+### Code Example
+
+Here's a simple code block:
+
+\`\`\`
+function hello() {
+    console.log("Hello, world!");
+}
+\`\`\`
+
+## Table Example
+
+| Name | Age | City |
+|------|-----|------|
+| John | 25  | New York |
+| Jane | 30  | London |
+
+> This is a blockquote example
+`;
+            editor.value = sampleContent;
+            updatePreview();
+        }
+
+        // Create new file
+        function newFile() {
+            if (editor.value.trim() !== '') {
+                if (!confirm('Are you sure you want to create a new file? All unsaved changes will be lost.')) {
+                    return;
+                }
+            }
+            editor.value = '';
+            updatePreview();
+            currentFile = null;
+            document.title = 'Web Markdown Reader';
+        }
+
+        // Open file
+        function openFile() {
+            fileModal.style.display = 'block';
+        }
+
+        // Handle file selection
+        function handleFileSelect() {
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    editor.value = e.target.result;
+                    updatePreview();
+                    currentFile = file.name;
+                    document.title = `Web Markdown Reader - ${file.name}`;
+                };
+                reader.readAsText(file);
+            }
+        }
+
+        // Handle file opening
+        function handleFileOpen() {
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    editor.value = e.target.result;
+                    updatePreview();
+                    currentFile = file.name;
+                    document.title = `Web Markdown Reader - ${file.name}`;
+                    fileModal.style.display = 'none';
+                };
+                reader.readAsText(file);
+            }
+        }
+
+        // Save file
+        function saveFile() {
+            const content = editor.value;
+            if (content.trim() === '') {
+                alert('Nothing to save!');
+                return;
+            }
+
+            const blob = new Blob([content], { type: 'text/markdown' });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = currentFile || 'document.md';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Insert markdown text at cursor position
+        function insertMarkdown(text) {
+            const start = editor.selectionStart;
+            const end = editor.selectionEnd;
+            const selectedText = editor.value.substring(start, end);
+
+            if (selectedText) {
+                // If there's selected text, wrap it with the markdown syntax
+                if (text === '**bold**') {
+                    editor.value = editor.value.substring(0, start) + '**' + selectedText + '**' + editor.value.substring(end);
+                } else if (text === '*italic*') {
+                    editor.value = editor.value.substring(0, start) + '*' + selectedText + '*' + editor.value.substring(end);
+                } else if (text === '`code`') {
+                    editor.value = editor.value.substring(0, start) + '`' + selectedText + '`' + editor.value.substring(end);
+                } else {
+                    // For other cases like headings, quotes, etc.
+                    editor.value = editor.value.substring(0, start) + text + editor.value.substring(end);
+                }
+            } else {
+                // Otherwise, insert at cursor position
+                editor.value = editor.value.substring(0, start) + text + editor.value.substring(start);
+            }
+
+            // Set cursor position after inserted text
+            const newPosition = start + text.length;
+            setTimeout(() => {
+                editor.selectionStart = newPosition;
+                editor.selectionEnd = newPosition;
+            }, 0);
+
+            updatePreview();
+        }
+
+        // Undo functionality
+        function undo() {
+            if (undoStack.length > 0) {
+                // Save current state to redo stack
+                redoStack.push(editor.value);
+                // Get previous state from undo stack
+                const prevState = undoStack.pop();
+                editor.value = prevState;
+                lastContent = prevState;
+                isUndoRedo = true;
+                updatePreview();
+                isUndoRedo = false;
+            }
+        }
+
+        // Redo functionality
+        function redo() {
+            if (redoStack.length > 0) {
+                // Save current state to undo stack
+                undoStack.push(editor.value);
+                // Get next state from redo stack
+                const nextState = redoStack.pop();
+                editor.value = nextState;
+                lastContent = nextState;
+                isUndoRedo = true;
+                updatePreview();
+                isUndoRedo = false;
+            }
+        }
+
+        // Insert link
+        function insertLink() {
+            const url = prompt('Enter URL:');
+            if (url) {
+                const text = prompt('Enter link text:');
+                if (text) {
+                    const linkMarkdown = `[${text}](${url})`;
+                    insertMarkdown(linkMarkdown);
+                } else {
+                    insertMarkdown(`[${url}](${url})`);
+                }
+            }
+        }
+
+        // Initialize when page loads
+        window.onload = init;
+    </script>
+</body>
+</html>
