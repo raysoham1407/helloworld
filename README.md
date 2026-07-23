@@ -1,53 +1,33 @@
 # HelloWorld DevOps Project
 
-This repository contains DevOps tools and utilities including system monitoring and a web-based Markdown reader application.
+This repository contains DevOps tools and utilities including system monitoring and a web-based Markdown reader application. Both tools are designed to be self-contained and portable.
 
-## Available Scripts
+## Tools
 
-### `system-monitor.sh`
+### System Monitor Script (`system-monitor.sh`)
+A bash script for monitoring system resources with three modes:
+- CPU usage
+- RAM usage  
+- VRAM usage (requires NVIDIA GPU with drivers)
 
-A bash script that provides three monitoring options:
+### Web-based Markdown Reader (`markdown_reader_web.html`)
+A split-screen Markdown editor with real-time preview, built with HTML, CSS, and JavaScript - no server required.
 
-1. **CPU Usage Monitoring**: Shows top processes using most CPU
-   ```bash
-   ./system-monitor.sh cpu
-   ```
+## Documentation
 
-2. **RAM Usage Monitoring**: Shows top processes using most RAM
-   ```bash
-   ./system-monitor.sh ram
-   ```
-
-3. **VRAM Usage Monitoring**: Shows top processes using most VRAM (GPU memory)
-   ```bash
-   ./system-monitor.sh vram
-   ```
-
-### `markdown_reader_web.html`
-
-A web-based split-screen Markdown editor with live preview, built with HTML, CSS, and JavaScript.
-
-#### Features
-
-- Edit Markdown in the left panel
-- Real-time preview in the right panel
-- Formatting toolbar with Bold, Italic, Heading, Quote, Link, Code, List
-- File operations: New, Open, Save
-- Keyboard shortcuts (Ctrl+N/O/S)
-- Responsive design that works on different screen sizes
-
-#### Usage
-
-Simply open `markdown_reader_web.html` in any modern web browser to use the editor.
+Each tool has dedicated documentation:
+- `SYSTEM_MONITOR_GUIDELINES.md` - Details on using the system monitor script
+- `markdown_reader_web_README.md` - Complete documentation for the web-based Markdown reader
 
 ## Requirements
 
-- For system monitoring: Linux system with bash shell
-- For VRAM monitoring: NVIDIA GPU with drivers and nvidia-smi installed
+- Linux system with bash shell for system monitoring
 - Modern web browser for the Markdown reader
+- For VRAM monitoring: NVIDIA GPU with drivers and nvidia-smi installed
 
-## Usage Examples
+## Usage
 
+### System Monitor
 ```bash
 # Show CPU usage
 ./system-monitor.sh cpu
@@ -60,10 +40,10 @@ Simply open `markdown_reader_web.html` in any modern web browser to use the edit
 
 # Show help
 ./system-monitor.sh help
-
-# Open web-based Markdown reader in browser
-xdg-open markdown_reader_web.html
 ```
+
+### Markdown Reader
+Simply open `markdown_reader_web.html` in any modern web browser to use the editor.
 
 ## Repository Structure
 
