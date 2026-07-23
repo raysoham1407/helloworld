@@ -240,6 +240,7 @@
         <div class="file-actions">
             <button id="newBtn"><i class="fas fa-file"></i> New</button>
             <button id="openBtn"><i class="fas fa-folder-open"></i> Open</button>
+            <button id="reloadBtn" title="Reload file from disk"><i class="fas fa-sync-alt"></i> Reload</button>
             <button id="saveBtn"><i class="fas fa-save"></i> Save</button>
         </div>
     </div>
@@ -289,6 +290,7 @@
         const preview = document.getElementById('preview');
         const newBtn = document.getElementById('newBtn');
         const openBtn = document.getElementById('openBtn');
+        const reloadBtn = document.getElementById('reloadBtn');
         const saveBtn = document.getElementById('saveBtn');
         const undoBtn = document.getElementById('undoBtn');
         const redoBtn = document.getElementById('redoBtn');
@@ -306,7 +308,8 @@
         const lineCount = document.getElementById('lineCount');
 
         // State
-        let currentFile = null;
+        let currentFileName = null;
+        let currentFileObject = null;
         let undoStack = [];
         let redoStack = [];
         let isUndoRedo = false;
@@ -321,6 +324,7 @@
             editor.addEventListener('input', updatePreview);
             newBtn.addEventListener('click', newFile);
             openBtn.addEventListener('click', openFile);
+            reloadBtn.addEventListener('click', reloadFile);
             saveBtn.addEventListener('click', saveFile);
             undoBtn.addEventListener('click', undo);
             redoBtn.addEventListener('click', redo);
@@ -450,7 +454,8 @@ function hello() {
             }
             editor.value = '';
             updatePreview();
-            currentFile = null;
+            currentFileName = null;
+            currentFileObject = null;
             document.title = 'Web Markdown Reader';
         }
 
@@ -467,7 +472,8 @@ function hello() {
                 reader.onload = function(e) {
                     editor.value = e.target.result;
                     updatePreview();
-                    currentFile = file.name;
+                    currentFileName = file.name;
+                    currentFileObject = file;
                     document.title = `Web Markdown Reader - ${file.name}`;
                 };
                 reader.readAsText(file);
@@ -482,7 +488,8 @@ function hello() {
                 reader.onload = function(e) {
                     editor.value = e.target.result;
                     updatePreview();
-                    currentFile = file.name;
+                    currentFileName = file.name;
+                    currentFileObject = file;
                     document.title = `Web Markdown Reader - ${file.name}`;
                     fileModal.style.display = 'none';
                 };
@@ -503,11 +510,25 @@ function hello() {
 
             const a = document.createElement('a');
             a.href = url;
-            a.download = currentFile || 'document.md';
+            a.download = currentFileName || 'document.md';
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
+        }
+
+        // Reload file from disk
+        function reloadFile() {
+            if (!currentFileObject) {
+                alert('No file has been opened yet!');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                editor.value = e.target.result;
+                updatePreview();
+            };
+            reader.readAsText(currentFileObject);
         }
 
         // Insert markdown text at cursor position
