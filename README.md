@@ -71,4 +71,4 @@ xdg-open markdown_reader_web.html
 - `markdown_reader_web.html` - Web-based split-screen Markdown editor + preview
 + `markdown_reader_web_README.md` - Dedicated documentation for the web reader
 - `README.md` - This file
-- `DEVOPS_GUIDELINES.md` - DevOps development guidelines
+- `SYSTEM_MONITOR_GUIDELINES.md` - Documentation for the system monitor script
